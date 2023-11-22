@@ -5,14 +5,30 @@ function extraiLinks(links) {
 export default async function listaValidada(listaDeLinks) {
     const links = extraiLinks(listaDeLinks);
     const status = await checaLink(links);
-    console.log(status);
+    
+    return listaDeLinks.map((obj, i) => ({
+        ...obj,
+        status: status[i]
+    }))
+}
+
+function trataErro(erro) {
+    if (erro.cause.code === 'ENOTFOUND') {
+        return 'Link não encontrado';
+    } else {
+        return 'Ocorreu algum erro';
+    }
 }
 
 async function checaLink(lista) {
     const listaRetornos = await Promise.all(
         lista.map(async (link) =>{
-            const response = await fetch(link);
-            return response.status;
+            try {
+                const response = await fetch(link);
+                return response.status   
+            } catch (error) {
+                return trataErro(error);
+            };
         })
     );
     return listaRetornos;
